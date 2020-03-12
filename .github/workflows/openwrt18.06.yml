@@ -53,10 +53,8 @@ jobs:
         run: |
            rm    -rfv  package/lean/autocore
            cd package/diy
-           tar   xvJf  luci-app-docker.tar.xz
            tar   xvJf  luci-app-koolddns.tar.xz
            tar   xvJf  luci-app-rclone.tar.xz
-           tar   xvJf  autocore.tar.xz
            tar   xvJf  luci-app-nps.tar.xz
            tar   xvJf  luci-app-cpufreq.tar.xz
            git clone  https://github.com/Sweet-Fairy/openwrt-package
@@ -161,7 +159,7 @@ jobs:
           # 常用LuCI插件选择:
            cat >> .config <<EOF
             CONFIG_PACKAGE_luci-app-adbyby-plus=y
-            CONFIG_PACKAGE_luci-app-aria2=y
+           # CONFIG_PACKAGE_luci-app-aria2=y
             CONFIG_PACKAGE_luci-app-baidupcs-web=y
           # CONFIG_PACKAGE_luci-app-docker=y
           # CONFIG_PACKAGE_luci-lib-docker=y
