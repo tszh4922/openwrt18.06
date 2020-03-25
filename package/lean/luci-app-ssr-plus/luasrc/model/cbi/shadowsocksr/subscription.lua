@@ -12,9 +12,11 @@ end)
 local fs  = require "nixio.fs"
 local sys = require "luci.sys"
 
+local ucic = luci.model.uci.cursor()
+
 m = Map(shadowsocksr)
 m:section(SimpleSection).template  = "shadowsocksr/status"
--- Server Subscribe
+-- [[ 节点订阅 ]]--
 
 s = m:section(TypedSection, "server_subscribe",  translate("Subscription"))
 s.anonymous = true
@@ -26,7 +28,7 @@ o.description = translate("Auto Update Server subscription, GFW list and CHN rou
 
 o = s:option(ListValue, "auto_update_time", translate("Update time (every day)"))
 for t = 0,23 do
-o:value(t, t..":00")
+    o:value(t, t..":00")
 end
 o.default=2
 o.rmempty = false
@@ -59,17 +61,23 @@ o = s:option(Button,"delete",translate("Delete All Subscribe Severs"))
 o.inputstyle = "reset"
 o.description = string.format(translate("Server Count") ..  ": %d", server_count)
 o.write = function()
-uci:delete_all("shadowsocksr", "servers", function(s) 
-  if s["hashkey"] then
+uci:delete_all("shadowsocksr", "servers", function(s)
+  if s.hashkey or s.isSubscribe then
     return true
   else
     return false
   end
 end)
-uci:save("shadowsocksr")
-luci.sys.call("uci commit shadowsocksr && /etc/init.d/shadowsocksr stop")
+uci:save("shadowsocksr") 
+uci:commit("shadowsocksr")
+luci.sys.exec("/etc/init.d/shadowsocksr restart")
 luci.http.redirect(luci.dispatcher.build_url("admin", "services", "shadowsocksr", "servers"))
 return
 end
 
 return m
+
+
+
+
+
