@@ -26,13 +26,12 @@ local i=luci.sys.exec("cat /usr/share/koolproxy/dnsmasq.adblock | wc -l")
 
 
 if luci.sys.call("pidof koolproxy >/dev/null") == 0 then
-	status = translate("<strong><font color=\"green\">KoolProxyR plus+  运行中</font></strong>")
+	status = translate("<strong><font color=\"green\">广告过滤大师 plus+  运行中</font></strong>")
 else
-	status = translate("<strong><font color=\"red\">KoolProxyR plus+  已停止</font></strong>")
+	status = translate("<strong><font color=\"red\">广告过滤大师 plus+  已停止</font></strong>")
 end
 
-o = Map("koolproxy", translate("KoolProxyR plus+ "), translate("KoolProxyR plus+是能识别adblock规则的免费开源软件,追求体验更快、更清洁的网络，屏蔽烦人的广告 <br /><font color=\"red\"><br /></font>"))
-
+o = Map("koolproxy", "<font color='green'>" .. translate("广告过滤大师 plus+ ") .."</font>",     "<font color='purple'>" .. translate( "广告过滤大师 plus+是能识别adblock规则的广告屏蔽软件，可以过滤网页广告、视频广告、HTTPS广告") .."</font>")
 
 t = o:section(TypedSection, "global")
 t.anonymous = true
@@ -47,7 +46,7 @@ e.rmempty = false
 e = t:taboption("base", DummyValue, "koolproxy_status", translate("程序版本"))
 e.value = string.format("[ %s ]", v)
 
-e = t:taboption("base", Value, "startup_delay", translate("Startup Delay"))
+e = t:taboption("base", Value, "startup_delay", translate("启动延迟"))
 e:value(0, translate("Not enabled"))
 for _, v in ipairs({5, 10, 15, 25, 40}) do
 	e:value(v, translate("%u seconds") %{v})
@@ -107,9 +106,12 @@ e:value(3, translate("全部过滤"))
 e.description = translate(string.format("<font color=\"blue\"><strong>访问控制设置中其他主机的默认规则</strong></font>"))
 
 e = t:taboption("base", ListValue, "time_update", translate("定时更新"))
+
 for t = 0,23 do
+
 	e:value(t,translate("每天"..t.."点"))
 end
+e:value(nil, translate("关闭"))
 e.default = 0
 e.rmempty = false
 e.description = translate(string.format("<font color=\"red\"><strong>定时更新订阅规则与Adblock Plus Hosts</strong></font>"))
@@ -288,7 +290,7 @@ end
 function e.write(self, section, value)
 end
 
-t=o:section(TypedSection,"acl_rule",translate("KoolProxyR 访问控制"),
+t=o:section(TypedSection,"acl_rule",translate("访问控制"),
 translate("ACLs is a tools which used to designate specific IP filter mode,The MAC addresses added to the list will be filtered using https"))
 t.template="cbi/tblsection"
 t.sortable=true
@@ -323,7 +325,7 @@ e:value(1,translate("http only"))
 e:value(2,translate("http + https"))
 e:value(3,translate("full port"))
 
-t=o:section(TypedSection,"rss_rule",translate("KoolProxyR 规则订阅"), translate("请确保订阅规则的兼容性"))
+t=o:section(TypedSection,"rss_rule",translate("广告过滤规则订阅"), translate("请确保订阅规则的兼容性"))
 t.anonymous=true
 t.addremove=true
 t.sortable=true
@@ -393,7 +395,7 @@ function(o,a,i)
 end
 )
 
-t=o:section(TypedSection,"rss_rules",translate("技术支持"),translate("本软件由KPR提供技术支持"))
+t=o:section(TypedSection,"rss_rules",translate("技术支持"))
 t.anonymous = true
 t:append(Template("koolproxy/feedback"))
 return o
