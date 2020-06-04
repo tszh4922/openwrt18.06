@@ -5,7 +5,7 @@
 	
 	local tcp_node_num = api.uci_get_type("global_other", "tcp_node_num", 1)
 	local udp_node_num = api.uci_get_type("global_other", "udp_node_num", 1)
-	local socks5_node_num = api.uci_get_type("global_other", "socks5_node_num", 1)
+	local socks_node_num = api.uci_get_type("global_other", "socks_node_num", 1)
 	local compact_display_nodes = api.uci_get_type("global_other", "compact_display_nodes", 1)
 -%>
 
@@ -98,7 +98,7 @@ table td, .table .td {
 	
 	function set_node(protocol,number) {
 		if (confirm('<%:Are you sure set to%> ' + protocol.toUpperCase() + "_" + number + '<%:the server?%>')==true){
-			window.location.href = '<%=dsp.build_url("admin/vpn/passwall/set_node")%>?protocol=' + protocol + '&number=' + number + '&section=' + section;
+			window.location.href = '<%=dsp.build_url("admin/Internet/passwall/set_node")%>?protocol=' + protocol + '&number=' + number + '&section=' + section;
 		}
 	}
 	
@@ -117,7 +117,7 @@ table td, .table .td {
 			var port = document.getElementById("cbid.passwall." + cbi_id + ".port").value;
 		<% end %>
 		if ((address != null && address != "") && (port != null && port != "")) {
-			XHR.get('<%=dsp.build_url("admin/vpn/passwall/ping_node")%>', {
+			XHR.get('<%=dsp.build_url("admin/Internet/passwall/ping_node")%>', {
 					address: address,
 					port: port
 				},
@@ -166,7 +166,7 @@ table td, .table .td {
 			//判断是否含有汉字
 			var reg = new RegExp("[\\u4E00-\\u9FFF]+","g");
 			if ((address != null && address != "") && (port != null && port != "") && reg.test(address) == false && (address.indexOf(".") != -1 && address.charAt(address.address - 1) != ".")) {
-				ajax.post('<%=dsp.build_url("admin/vpn/passwall/ping_node")%>', {
+				ajax.post('<%=dsp.build_url("admin/Internet/passwall/ping_node")%>', {
 						index: index,
 						address: address,
 						port: port
@@ -261,9 +261,9 @@ table td, .table .td {
 			<% end %>
 		<% end %>
 		
-		<% if socks5_node_num and tonumber(socks5_node_num) >= 1 then %>
-			<% for i = 1, socks5_node_num, 1 do %>
-				<input class="cbi-button cbi-button-edit" type="button" onclick="set_node('socks5',<%=i%>)" value="Socks5_<%=i%>" />
+		<% if socks_node_num and tonumber(socks_node_num) >= 1 then %>
+			<% for i = 1, socks_node_num, 1 do %>
+				<input class="cbi-button cbi-button-edit" type="button" onclick="set_node('socks',<%=i%>)" value="Socks_<%=i%>" />
 			<% end %>
 		<% end %>
 		<input class="cbi-button cbi-button-remove" type="button" onclick="close_set_node_div()" value="<%:Close%>" />

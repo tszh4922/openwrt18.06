@@ -13,13 +13,23 @@ enable_redirect_dns=$(uci get openclash.config.enable_redirect_dns 2>/dev/null)
 disable_masq_cache=$(uci get openclash.config.disable_masq_cache 2>/dev/null)
 if_restart=0
 
+urlencode() {
+    local data
+    if [ "$#" -eq "1" ]; then
+       data=$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "$1" "")
+       if [ ! -z "$data" ]; then
+           echo "${data##/?}"
+       fi
+    fi
+}
+
 config_download()
 {
 if [ "$URL_TYPE" == "v2rayn" ]; then
-   subscribe_url=`echo $subscribe_url |sed 's/{/%7B/g;s/}/%7D/g;s/:/%3A/g;s/\"/%22/g;s/,/%2C/g;s/?/%3F/g;s/=/%3D/g;s/&/%26/g;s/\//%2F/g'`
+   subscribe_url=$(urlencode "$subscribe_url")
    curl -sL --connect-timeout 10 --retry 2 https://tgbot.lbyczf.com/v2rayn2clash?url="$subscribe_url" -o "$CFG_FILE" >/dev/null 2>&1
 elif [ "$URL_TYPE" == "surge" ]; then
-   subscribe_url=`echo $subscribe_url |sed 's/{/%7B/g;s/}/%7D/g;s/:/%3A/g;s/\"/%22/g;s/,/%2C/g;s/?/%3F/g;s/=/%3D/g;s/&/%26/g;s/\//%2F/g'`
+   subscribe_url=$(urlencode "$subscribe_url")
    curl -sL --connect-timeout 10 --retry 2 https://tgbot.lbyczf.com/surge2clash?url="$subscribe_url" -o "$CFG_FILE" >/dev/null 2>&1
 else
    curl -sL --connect-timeout 10 --retry 2 --user-agent "clash" "$subscribe_url" -o "$CFG_FILE" >/dev/null 2>&1
@@ -33,7 +43,7 @@ config_cus_up()
 	    uci set openclash.config.config_path="$CONFIG_PATH"
       uci commit openclash
 	fi
-	if [ "$servers_update" -eq "1" ] || [ ! -z "$keyword" ]; then
+	if [ "$servers_update" -eq 1 ] || [ ! -z "$keyword" ]; then
 	   echo "配置文件【$name】替换成功，开始挑选节点..." >$START_LOG
 	   uci set openclash.config.config_update_path="/etc/openclash/config/$name.yaml"
 	   uci set openclash.config.servers_if_update=1
@@ -60,6 +70,7 @@ config_cus_up()
      sleep 3
      echo "" >$START_LOG
   fi
+  rm -rf /tmp/Proxy_Group 2>/dev/null
 }
 
 config_su_check()
@@ -89,38 +100,7 @@ config_su_check()
 
 config_encode()
 {
-	#proxies
-   [ -z "$(grep "^Proxy:" "$CFG_FILE")" ] && {
-      sed -i "/^ \{1,\}Proxy:/c\Proxy:" "$CFG_FILE" 2>/dev/null
-   }
-   [ -z "$(grep "^Proxy:" "$CFG_FILE")" ] && {
-      sed -i "s/^proxies:/Proxy:/" "$CFG_FILE" 2>/dev/null
-   }
-
-	 #proxy-providers
-	 [ -z "$(grep "^proxy-provider:" "$CFG_FILE")" ] && {
-      sed -i "/^ \{1,\}proxy-provider:/c\proxy-provider:" "$CFG_FILE" 2>/dev/null
-   }
-   [ -z "$(grep "^proxy-provider:" "$CFG_FILE")" ] && {
-      sed -i "/^ \{0,\}proxy-providers:/c\proxy-provider:" "$CFG_FILE" 2>/dev/null
-   }
-   #proxy-groups
-   [ -z "$(grep "^Proxy Group:" "$CFG_FILE")" ] && {
-      sed -i "/^ \{0,\}\'Proxy Group\':/c\Proxy Group:" "$CFG_FILE" 2>/dev/null
-      sed -i '/^ \{0,\}\"Proxy Group\":/c\Proxy Group:' "$CFG_FILE" 2>/dev/null
-      sed -i "/^ \{1,\}Proxy Group:/c\Proxy Group:" "$CFG_FILE" 2>/dev/null
-   }
-   [ -z "$(grep "^Proxy Group:" "$CFG_FILE")" ] && {
-      sed -i "/^ \{0,\}proxy-groups:/c\Proxy Group:" "$CFG_FILE" 2>/dev/null
-   }
-   
-   #rules
-   [ -z "$(grep "^Rule:" "$CFG_FILE")" ] && {
-      sed -i "/^ \{1,\}Rule:/c\Rule:" "$CFG_FILE" 2>/dev/null
-   }
-   [ -z "$(grep "^Rule:" "$CFG_FILE")" ] && {
-      sed -i "/^ \{0,\}rules:/c\Rule:" "$CFG_FILE" 2>/dev/null
-   }
+   /usr/share/openclash/yml_field_name_ch.sh "$CFG_FILE"
 }
 
 config_error()
@@ -219,9 +199,9 @@ sub_info_get()
    if [ "$?" -eq "0" ] && [ -s "$CFG_FILE" ]; then
    	  config_encode
    	  grep "^ \{0,\}Proxy Group:" "$CFG_FILE" >/dev/null 2>&1 && grep "^ \{0,\}Rule:" "$CFG_FILE" >/dev/null 2>&1
-      if [ "$?" -eq "0" ]; then
+      if [ "$?" -eq 0 ]; then
          grep "^ \{0,\}Proxy:" "$CFG_FILE" >/dev/null 2>&1 || grep "^ \{0,\}proxy-provider:" "$CFG_FILE" >/dev/null 2>&1
-         if [ "$?" -eq "0" ]; then
+         if [ "$?" -eq 0 ]; then
             config_su_check
          else
             config_download_direct
